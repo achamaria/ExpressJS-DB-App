@@ -2,6 +2,8 @@ var express = require('express');
 var bodyParser = require('body-parser');
 var path = require('path');
 var expressValidator = require('express-validator');
+var mongojs = require('mongojs');
+var db = mongojs('customerapp', ['users']);
 
 var app = express();
 
@@ -63,10 +65,13 @@ var users = [
 ]
 
 app.get('/', function (req, res) {
-    res.render('index',{
-        title: 'Customers',
-        users: users
+    db.users.find(function(err, docs){
+        res.render('index',{
+            title: 'Customers',
+            users: docs
+        });
     });
+
 });
 
 app.post('/users/add', function (req, res) {
@@ -89,6 +94,13 @@ app.post('/users/add', function (req, res) {
             last_name: req.body.last_name,
             email: req.body.email
         }
+
+        db.users.insert(newUser, function (err, result) {
+            if(err){
+                console.log(err);
+            }
+            res.redirect('/');
+        });
     }
 });
 
